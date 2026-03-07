@@ -20,19 +20,16 @@ public final class ConnectionConfig {
     private static Connection conn = null;
 
     public static Connection getConnection() {
-        if (conn == null) {
-            try {
+        try {
+            if (conn == null || conn.isClosed()) {
                 Properties props = loadProperties();
-                // pegamos as propriedades
                 String url = props.getProperty("dburl");
-                // pegamos a url do banco de dados
                 conn = DriverManager.getConnection(url, props);
-                // estabelecemos a conexão, que é instanciar um objeto tipo Connection
                 conn.setAutoCommit(false);
             }
-            catch (SQLException e) {
-                throw new DbException(e.getMessage());
-            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DbException("Erro ao estabelecer conexão com o banco de dados: " + e.getMessage());
         }
         return conn;
     }
