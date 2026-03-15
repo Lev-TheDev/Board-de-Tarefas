@@ -2,6 +2,7 @@ package br.com.dio.persistence.dao;
 
 import br.com.dio.dto.BoardColumnDTO;
 import br.com.dio.persistence.entity.BoardColumnEntity;
+import br.com.dio.persistence.entity.CardEntity;
 import com.mysql.cj.jdbc.StatementImpl;
 import lombok.RequiredArgsConstructor;
 
@@ -9,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static br.com.dio.persistence.entity.BoardColumnKindEnum.findByName;
 
@@ -33,10 +35,10 @@ public class BoardColumnDAO {
         }
     }
 
-    public List<BoardColumnEntity> findByBoardId(Long id) throws SQLException {
+    public List<BoardColumnEntity> findByBoardId(final Long boardId) throws SQLException {
         var sql = "SELECT id, name, `order`, kind FROM BOARDS_COLUMNS WHERE board_id = ? ORDER BY `order`";
         try(var statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
+            statement.setLong(1, boardId);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             List<BoardColumnEntity> entities = new ArrayList<>();
@@ -52,7 +54,7 @@ public class BoardColumnDAO {
         }
     }
 
-    public List<BoardColumnDTO> findByBoardIdWithDetails(Long id) throws SQLException {
+    public List<BoardColumnDTO> findByBoardIdWithDetails(final Long boardId) throws SQLException {
         List<BoardColumnDTO> dtos = new ArrayList<>();
         var sql = """
         SELECT bc.id,
@@ -66,7 +68,7 @@ public class BoardColumnDAO {
          ORDER BY `order`
         """;
         try(var statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
+            statement.setLong(1, boardId);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             List<BoardColumnEntity> entities = new ArrayList<>();
@@ -79,6 +81,38 @@ public class BoardColumnDAO {
                 dtos.add(dto);
             }
             return dtos;
+        }
+    }
+
+    public Optional<BoardColumnEntity> findById(final Long boardId) throws SQLException {
+        var sql =
+                """
+                SELECT bc.name,
+                bc.kind
+                c.id,
+                c.title,
+                c.description,
+                FROM BOARDS_COLUMNS bc
+                INNER JOIN CARDS c ON c.board_column_id = bc.id
+                WHERE bc.id = ?;
+                """;
+        try(var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, boardId);
+            statement.executeQuery();
+            var resultSet = statement.getResultSet();
+            if (resultSet.next()){
+                var boardColumnEntity = new BoardColumnEntity();
+                boardColumnEntity.setName(resultSet.getString("bc.name"));
+                boardColumnEntity.setKind(findByName(resultSet.getString("bc.kind")));
+                do {
+                    var cardEntity = new CardEntity();
+                    cardEntity.setId(resultSet.getLong("c.id"));
+                    cardEntity.setTitle(resultSet.getString("c.title"));
+                    cardEntity.setDescription(resultSet.getString("c.description"));
+                    boardColumnEntity.getCards().add(cardEntity);
+                } while (resultSet.next());
+            }
+            return Optional.empty();
         }
     }
 
