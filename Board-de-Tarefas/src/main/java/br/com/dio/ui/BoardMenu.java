@@ -4,6 +4,7 @@ import br.com.dio.persistence.entity.BoardColumnEntity;
 import br.com.dio.persistence.entity.BoardEntity;
 import br.com.dio.service.BoardColumnQueryService;
 import br.com.dio.service.BoardQueryService;
+import br.com.dio.service.CardQueryService;
 import lombok.AllArgsConstructor;
 
 import java.sql.SQLException;
@@ -113,6 +114,19 @@ public class BoardMenu {
     }
 
 
-    private void showCard() {
+    private void showCard() throws SQLException {
+        System.out.println("Input the card id you want to see:");
+        var selectedCardId = scanner.nextLong();
+        try(var connection = getConnection()){
+            new CardQueryService(connection).findById(selectedCardId).ifPresentOrElse(
+                    c -> {
+                System.out.printf("Card: %s - %s.\n", c.id(), c.title());
+                        System.out.printf("Description: %s.\n", c.description());
+                        System.out.println(c.blocked() ? "This card is currently blocked. Reason: " + c.blockedReason() : "This card is currently unblocked.");
+                        System.out.printf("Been blocked %s times.\n", c.blocksAmount());
+                        System.out.printf("Current column: %s - %s\n", c.columnId(), c.columnName());
+            },
+                () -> System.out.println("Card not found with id: " + selectedCardId));
+        }
     }
 }
