@@ -16,4 +16,10 @@ public class BoardEntity {
     @EqualsAndHashCode.Exclude
     private List<BoardColumnEntity> boardColumns = new ArrayList<>();
 
+    public BoardColumnEntity getInitialColumn() {
+        return boardColumns.stream()
+                .filter(bc -> bc.getKind().equals(BoardColumnKindEnum.INITIAL))
+                .findFirst().orElseThrow();
+    }
+
 }

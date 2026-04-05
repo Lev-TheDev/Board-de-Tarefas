@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.dio.persistence.entity.BoardColumnKindEnum.findByName;
+import static java.util.Objects.isNull;
 
 @RequiredArgsConstructor
 public class BoardColumnDAO {
@@ -60,12 +61,12 @@ public class BoardColumnDAO {
         SELECT bc.id,
                bc.name,
                bc.kind,
-               COUNT(SELECT c.id
+               (SELECT COUNT(c.id)
                 FROM CARDS c
                 WHERE c.board_column_id = bc.id) cards_amount
-         FROM BOARDS_COLUMNS
+         FROM BOARDS_COLUMNS bc
          WHERE board_id = ?
-         ORDER BY `order`
+         ORDER BY `order`;
         """;
         try(var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, boardId);
@@ -86,16 +87,17 @@ public class BoardColumnDAO {
 
     public Optional<BoardColumnEntity> findById(final Long boardId) throws SQLException {
         var sql =
-                """
-                SELECT bc.name,
-                bc.kind
-                c.id,
-                c.title,
-                c.description,
-                FROM BOARDS_COLUMNS bc
-                INNER JOIN CARDS c ON c.board_column_id = bc.id
-                WHERE bc.id = ?;
-                """;
+        """
+        SELECT bc.name,
+               bc.kind,
+               c.id,
+               c.title,
+               c.description
+         FROM BOARDS_COLUMNS bc
+         LEFT JOIN CARDS c
+           ON c.board_column_id = bc.id
+        WHERE bc.id = ?;
+        """;
         try(var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, boardId);
             statement.executeQuery();
@@ -105,12 +107,16 @@ public class BoardColumnDAO {
                 boardColumnEntity.setName(resultSet.getString("bc.name"));
                 boardColumnEntity.setKind(findByName(resultSet.getString("bc.kind")));
                 do {
+                    if (isNull(resultSet.getString("c.title"))) {
+                        break;
+                    }
                     var cardEntity = new CardEntity();
                     cardEntity.setId(resultSet.getLong("c.id"));
                     cardEntity.setTitle(resultSet.getString("c.title"));
                     cardEntity.setDescription(resultSet.getString("c.description"));
                     boardColumnEntity.getCards().add(cardEntity);
                 } while (resultSet.next());
+                return Optional.of(boardColumnEntity);
             }
             return Optional.empty();
         }
