@@ -1,7 +1,6 @@
 package br.com.dio.ui;
 
 import br.com.dio.persistence.entity.BoardColumnEntity;
-import br.com.dio.persistence.entity.BoardColumnKindEnum;
 import br.com.dio.persistence.entity.BoardEntity;
 import br.com.dio.persistence.entity.CardEntity;
 import br.com.dio.service.BoardColumnQueryService;
@@ -74,12 +73,28 @@ public class BoardMenu {
         System.out.println("Input the card description:");
         card.setDescription(scanner.next());
         card.setBoardColumn(entity.getInitialColumn());
-        try (var connection = getConnection()){
-            new CardService(connection).insert(card);
+        try (var connection = getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                new CardService(connection).create(card);
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            }
         }
     }
 
-    private void moveCardToNextColumn() {
+    private void moveCardToNextColumn() throws SQLException {
+        System.out.println("Input the card id you want to move to the next column:");
+        var cardId = scanner.nextLong();
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new br.com.dio.dto.BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind())).toList();
+        try (var connection = getConnection()) {
+            new CardService(connection).moveToNextColumn(cardId, boardColumnsInfo);
+        } catch (RuntimeException e) {
+            System.out.println("An error occurred while moving the card: " + e.getMessage());
+        }
     }
 
     private void blockCard() {
