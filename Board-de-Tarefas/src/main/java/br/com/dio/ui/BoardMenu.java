@@ -92,6 +92,7 @@ public class BoardMenu {
                 .map(bc -> new br.com.dio.dto.BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind())).toList();
         try (var connection = getConnection()) {
             new CardService(connection).moveToNextColumn(cardId, boardColumnsInfo);
+            System.out.printf("Card with id [%s] successfully moved to the next column!", cardId);
         } catch (RuntimeException e) {
             System.out.println("An error occurred while moving the card: " + e.getMessage());
         }
@@ -103,7 +104,18 @@ public class BoardMenu {
     private void unblockCard() {
     }
 
-    private void cancelCard() {
+    private void cancelCard() throws SQLException {
+        System.out.println("Input the card id you want to cancel:");
+        var cardId = scanner.nextLong();
+        var canceledColumn = entity.getCanceledColumn();
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new br.com.dio.dto.BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind())).toList();
+        try (var connection = getConnection()) {
+            new CardService(connection).cancel(cardId, canceledColumn.getId(), boardColumnsInfo);
+            System.out.printf("Card with id [%s] successfully canceled!", cardId);
+        } catch (RuntimeException e) {
+            System.out.println("An error occurred while canceling the card: " + e.getMessage());
+        }
     }
 
     private void showBoard() throws SQLException {

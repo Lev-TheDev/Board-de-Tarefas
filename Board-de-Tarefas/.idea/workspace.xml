@@ -7,7 +7,7 @@
     <list default="true" id="c62de392-bc5b-4eb3-a10c-b0302b27f1a2" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/dio/persistence/dao/CardDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/dio/persistence/dao/CardDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/br/com/dio/persistence/entity/BoardEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/dio/persistence/entity/BoardEntity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/dio/service/CardService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/dio/service/CardService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/br/com/dio/ui/BoardMenu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/br/com/dio/ui/BoardMenu.java" afterDir="false" />
     </list>
