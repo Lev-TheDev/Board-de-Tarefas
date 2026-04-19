@@ -1,5 +1,8 @@
 package br.com.dio.ui;
 
+import br.com.dio.exception.CardBlockedException;
+import br.com.dio.exception.EntityNotFoundException;
+import br.com.dio.persistence.dao.CardDAO;
 import br.com.dio.persistence.entity.BoardColumnEntity;
 import br.com.dio.persistence.entity.BoardEntity;
 import br.com.dio.persistence.entity.CardEntity;
@@ -98,10 +101,28 @@ public class BoardMenu {
         }
     }
 
-    private void blockCard() {
+    private void blockCard() throws SQLException {
+        System.out.println("Input the card id you want to block:");
+        var cardId = scanner.nextLong();
+        System.out.println("Input the reason of the block you want to apply:");
+        var reason = scanner.next();
+        var boardColumnsInfo = entity.getBoardColumns().stream()
+                .map(bc -> new br.com.dio.dto.BoardColumnInfoDTO(bc.getId(), bc.getOrder(), bc.getKind())).toList();
+        try(var connection = getConnection()){
+            connection.setAutoCommit(false);
+            new CardService(connection).block(cardId, reason, boardColumnsInfo);
+            connection.commit();
+            System.out.printf("Card with id [%s] successfully blocked!\n", cardId);
+        } catch (RuntimeException e){
+            System.out.println("An error occurred while blocking the card: " + e.getMessage());
+        }
     }
 
-    private void unblockCard() {
+    private void unblockCard() throws SQLException {
+        System.out.println("Input the card id you want to unblock:");
+        var cardId = scanner.nextLong();
+        System.out.println("Input the reason of the unblock you want to apply:");
+        var reason = scanner.next();
     }
 
     private void cancelCard() throws SQLException {
