@@ -2,6 +2,7 @@ package br.com.dio.persistence.dao;
 
 import lombok.AllArgsConstructor;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 
 import static br.com.dio.persistence.converter.OffsetDateTimeConverter.toTimestamp;
@@ -21,6 +22,19 @@ public class BlockDAO {
             statement.executeUpdate();
         } catch (Exception e){
             throw new RuntimeException("Error blocking the card with id %d".formatted(cardId), e);
+        }
+    }
+
+    public void unblock(final String reason, final Long cardId) throws SQLException {
+        var sql = "UPDATE BLOCKS SET unblocked_at = ?, unblock_reason = ? WHERE card_id = ? AND unblock_reason IS NULL;";
+        try(var statement = connection.prepareStatement(sql)){
+            var i = 1;
+            statement.setTimestamp(i ++, toTimestamp(OffsetDateTime.now()));
+            statement.setString(i ++, reason);
+            statement.setLong(i, cardId);
+            statement.executeUpdate();
+        } catch (Exception e){
+            throw new RuntimeException("Error unblocking the card with id %d".formatted(cardId), e);
         }
     }
 

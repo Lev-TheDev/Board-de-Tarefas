@@ -123,6 +123,14 @@ public class BoardMenu {
         var cardId = scanner.nextLong();
         System.out.println("Input the reason of the unblock you want to apply:");
         var reason = scanner.next();
+        try(var connection = getConnection()){
+            connection.setAutoCommit(false);
+            new CardService(connection).unblock(cardId, reason);
+            connection.commit();
+            System.out.printf("Card with id [%s] successfully unblocked!\n", cardId);
+        } catch (RuntimeException e){
+            System.out.println("An error occurred while unblocking the card: " + e.getMessage());
+        }
     }
 
     private void cancelCard() throws SQLException {
